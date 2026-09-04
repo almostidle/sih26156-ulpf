@@ -39,3 +39,5 @@ services:
       MINIO_PASS: minioadmin
     volumes:
       - ./config/rules:/app/rules
+  
+  
