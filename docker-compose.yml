@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  redpanda:
+    image: redpandadata/redpanda:latest
+    container_name: redpanda
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      REDPANDA_BROKERS: redpanda:9092
+    command: redpanda start --mode dev-container
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/minio_data
+    command: minio server /minio_data --console-address ":9001"
+
+  # Placeholder for Go ingestion service (to be added)
+  # ingestion:
+  #   build: ./ingestion
+  #   container_name: ingestion
+  #   ports:
+  #     - "8080:8080"
+  #   depends_on:
+  #     - redpanda
+  #     - minio
+
+volumes:
+  minio_data:
