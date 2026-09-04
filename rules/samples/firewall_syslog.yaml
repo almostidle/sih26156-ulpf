@@ -1,0 +1,10 @@
+source_type: firewall_syslog
+pattern: '^<(?P<priority>\d+)>(?P<timestamp>\w{3}\s+\d+\s+\d{2}:\d{2}:\d{2})\s+(?P<hostname>[\w\.-]+)\s+(?P<action>ALLOW|DENY|DROP)\s+SRC=(?P<src_ip>[\d\.]+)\s+DST=(?P<dst_ip>[\d\.]+)\s+SPT=(?P<src_port>\d+)\s+DPT=(?P<dst_port>\d+)'
+
+ocsf_mapping:
+  class_uid: 4001
+  class_name: "Network Activity"
+  category_uid: 4
+  category_name: "Network Activity"
+  activity_id: 1
+  severity_id: 1
