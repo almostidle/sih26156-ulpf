@@ -1,0 +1,10 @@
+source_type: cef_firewall
+pattern: '^CEF:0\|(?P<vendor>[^\|]+)\|(?P<product>[^\|]+)\|(?P<version>[^\|]+)\|(?P<signature_id>[^\|]+)\|(?P<name>[^\|]+)\|(?P<severity>\d+)\|src=(?P<src_ip>[\d\.]+) dst=(?P<dst_ip>[\d\.]+) spt=(?P<src_port>\d+) dpt=(?P<dst_port>\d+) act=(?P<action>\w+)'
+
+ocsf_mapping:
+  class_uid: 4001
+  class_name: "Network Activity"
+  category_uid: 4
+  category_name: "Network Activity"
+  activity_id: 1
+  severity_id: 3

@@ -5,8 +5,8 @@ import hashlib
 import time
 import glob
 import yaml
-from kafka import KafkaConsumer, KafkaProducer
-from minio import Minio
+from kafka import KafkaConsumer, KafkaProducer  # type: ignore[import-not-found]
+from minio import Minio  # type: ignore[import-not-found]
 from io import BytesIO
 
 KAFKA_BROKER = os.getenv("KAFKA_BROKER", "localhost:9092")
@@ -14,7 +14,6 @@ MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "localhost:9000")
 MINIO_USER = os.getenv("MINIO_USER", "minioadmin")
 MINIO_PASS = os.getenv("MINIO_PASS", "minioadmin")
 
-# Initialize MinIO
 minio_client = Minio(
     MINIO_ENDPOINT,
     access_key=MINIO_USER,
@@ -37,8 +36,9 @@ def load_rules():
     for filepath in glob.glob("/app/rules/*.yaml"):
         with open(filepath, 'r') as f:
             data = yaml.safe_load(f)
-            data['compiled_regex'] = re.compile(data['pattern'])
-            rules.append(data)
+            if data and 'pattern' in data:
+                data['compiled_regex'] = re.compile(data['pattern'])
+                rules.append(data)
     return rules
 
 def compute_hash(data_bytes, prev_hash="00000000000000000000000000000000"):
@@ -51,7 +51,6 @@ def main():
     init_minio()
     rules = load_rules()
     
-    # Retry Kafka connection
     consumer = None
     for _ in range(15):
         try:
@@ -101,9 +100,12 @@ def main():
                 matched_rule = rule
                 break
 
-        # 3. Normalize into OCSF Standard Schema
-        ocsf_mapping = matched_rule['ocsf_mapping'] if matched_rule else {}
+        # Safely handle ocsf_mapping dictionary lookup
+        ocsf_mapping = {}
+        if matched_rule and matched_rule.get('ocsf_mapping'):
+            ocsf_mapping = matched_rule['ocsf_mapping']
         
+        # 3. Normalize into OCSF Standard Schema
         ocsf_event = {
             "class_uid": ocsf_mapping.get("class_uid", 0),
             "class_name": ocsf_mapping.get("class_name", "Unknown"),
@@ -125,7 +127,7 @@ def main():
                 "hostname": extracted_fields.get("hostname"),
                 "priority": extracted_fields.get("priority")
             },
-            "uncompromised_raw_hash": current_hash  # Traceability link back to raw evidence
+            "uncompromised_raw_hash": current_hash
         }
 
         # 4. Output Stream
